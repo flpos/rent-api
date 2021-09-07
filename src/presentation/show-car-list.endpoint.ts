@@ -7,8 +7,12 @@ export class ShowCarListEndpoint {
     app.get('/car', async (req, res) => {
       const useCase = new ShowCarList(carRepository);
 
-      const result = await useCase.execute();
-      res.json(result);
+      try {
+        const result = await useCase.execute();
+        res.json(result);
+      } catch (err) {
+        res.status(500).send((err as Error).message);
+      }
     });
   }
 }

@@ -8,8 +8,12 @@ export class ShowCarDetailsEndpoint {
       const { id } = req.params;
       const useCase = new ShowCarDetails(carRepository);
 
-      const result = await useCase.execute(id);
-      res.json(result);
+      try {
+        const result = await useCase.execute(id);
+        res.json(result);
+      } catch (err) {
+        res.status(500).send((err as Error).message);
+      }
     });
   }
 }

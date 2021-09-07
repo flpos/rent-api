@@ -8,8 +8,12 @@ export class UserLoginRegisterEndPoint {
       const payload = req.body;
       const useCase = new UserLoginRegister(userRepository);
 
-      const result = await useCase.execute(payload);
-      res.json(result);
+      try {
+        const result = await useCase.execute(payload);
+        res.json(result);
+      } catch (err) {
+        res.status(500).send((err as Error).message);
+      }
     });
   }
 }
