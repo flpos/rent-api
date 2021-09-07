@@ -11,16 +11,25 @@ export class CreateRentEndpoint {
     carRepository: CarRepository,
     rentRepository: RentRepository
   ) {
-    app.get('/car/:id', async (req, res) => {
-      const payload = req.body;
+    app.post('/create-rent', async (req, res) => {
+      const { start, end, userId, carId } = req.body;
       const useCase = new CreateRent(
         userRepository,
         carRepository,
         rentRepository
       );
 
-      const result = await useCase.execute(payload);
-      res.json(result);
+      try {
+        const result = await useCase.execute({
+          start: new Date(start),
+          end: new Date(end),
+          carId,
+          userId,
+        });
+        res.json(result);
+      } catch (err) {
+        res.status(500).send((err as Error).message);
+      }
     });
   }
 }
