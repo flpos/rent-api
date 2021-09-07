@@ -9,7 +9,9 @@
     "build": "tsc",
     "test:dev": "jest --watch",
     "test:cov": "jest --coverage",
-    "test": "jest"
+    "test": "jest",
+    "docker:build": "docker build -t flpos/rent-api .",
+    "docker:push": "docker push flpos/rent-api"
   },
   "keywords": [],
   "author": "",
