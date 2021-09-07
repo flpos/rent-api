@@ -1,5 +1,4 @@
 import { CarMemoryRepository } from '../../data/memory-cached/car-memory-cached.repository';
-import { CarRepository } from '../ports/car.repository';
 import { ShowCarDetails } from './show-car-details.usecase';
 
 describe('show-car-details usecase', () => {

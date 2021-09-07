@@ -24,11 +24,11 @@ export class RentMemoryRepository implements RentRepository {
     userId: string
   ): Promise<Rent | null> {
     return (
-      this.rents.find((rent) => {
-        if (rent.user.id !== userId) return false;
+      this.rents.find((rentItem) => {
+        if (rentItem.user.id !== userId) return false;
         return (
-          start.valueOf() < rent.end.valueOf() ||
-          rent.start.valueOf() < end.valueOf()
+          start.valueOf() < rentItem.end.valueOf() ||
+          rentItem.start.valueOf() < end.valueOf()
         );
       }) ?? null
     );
