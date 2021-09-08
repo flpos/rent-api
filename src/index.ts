@@ -1,17 +1,35 @@
 import express from 'express';
-import { CarMemoryRepository } from './data/memory-cached/car-memory-cached.repository';
-import { RentMemoryRepository } from './data/memory-cached/rent-memory-cached.repository';
-import { UserMemoryRepository } from './data/memory-cached/user-memory-cached.repository';
+import { MongoClient } from 'mongodb';
+import { CarMongodbRepository } from './data/remote/car-mongodb.repository';
+import { RentMongodbRepository } from './data/remote/rent.mongodb.repository';
+import { UserMongodbRepository } from './data/remote/user-mongodb.repository';
 import { setupControllers } from './presentation/setupControllers';
+
+const databaseUri =
+  process.env.DB_URL || 'mongodb://root:example@localhost:27017';
 
 const app = express();
 app.use(express.json());
 
-const carRepository = new CarMemoryRepository();
-const userRepository = new UserMemoryRepository();
-const rentRepository = new RentMemoryRepository();
+const mongoClient = new MongoClient(databaseUri);
+const db = mongoClient.db('rent');
+
+const carRepository = new CarMongodbRepository(db);
+const userRepository = new UserMongodbRepository(db);
+const rentRepository = new RentMongodbRepository(db);
 
 setupControllers(app, userRepository, carRepository, rentRepository);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`serving on port: ${port}`));
+
+mongoClient
+  .connect()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`serving on port: ${port}, with DB: ${databaseUri}`);
+    });
+  })
+  .catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
