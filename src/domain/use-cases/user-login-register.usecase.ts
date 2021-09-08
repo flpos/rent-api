@@ -13,7 +13,7 @@ export class UserLoginRegister implements BaseUseCase<UserLoginDto, any> {
       user = await this.userRepository.create(payload);
     }
     if (user.name !== payload.name) {
-      user = await this.userRepository.update(user.id, payload);
+      user = await this.userRepository.update(user.id!, payload);
     }
     return user;
   }
