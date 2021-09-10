@@ -11,7 +11,7 @@ export class CreateRentEndpoint {
     carRepository: CarRepository,
     rentRepository: RentRepository
   ) {
-    app.post('/create-rent', async (req, res) => {
+    app.post('/confirm-reservation', async (req, res) => {
       const { start, end, userId, carId } = req.body;
       const useCase = new CreateRent(
         userRepository,
