@@ -8,6 +8,7 @@ export class ShowCarList implements BaseUseCase<undefined, Array<CarListDto>> {
     const result = await this.carRepository.findAll();
 
     return result.map((c) => ({
+      id: c.id,
       brand: c.brand,
       imageUrl: c.imageUrl,
       model: c.model,
