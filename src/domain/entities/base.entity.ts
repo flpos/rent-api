@@ -1,7 +1,7 @@
 export class BaseEntity {
-  id: string;
+  id?: string;
 
-  constructor(id: string) {
+  constructor(id?: string) {
     this.id = id;
   }
 }
