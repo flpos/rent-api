@@ -1,15 +1,18 @@
-import { Collection, Db, MongoClient } from 'mongodb';
+import { Collection, Db, ObjectId, Document } from 'mongodb';
 import { User } from '../../domain/entities/user.entity';
 import { UserRepository } from '../../domain/ports/user.repository';
 
 export class UserMongodbRepository implements UserRepository {
-  userCollection: Collection<User>;
+  userCollection: Collection<User & Document>;
   constructor(mongoDatabase: Db) {
     this.userCollection = mongoDatabase.collection<User>('users');
   }
 
-  findByEmail(email: string): Promise<User | null> {
-    return this.userCollection.findOne({ email });
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await this.userCollection.findOne({ email });
+    if (!user) return null;
+    user.id = user._id;
+    return user;
   }
   async create(payload: Omit<User, 'id'>): Promise<User> {
     const { insertedId } = await this.userCollection.insertOne(payload);
@@ -20,16 +23,23 @@ export class UserMongodbRepository implements UserRepository {
     return document;
   }
   async update(id: string, payload: Omit<User, 'id'>): Promise<User | null> {
-    const { value } = await this.userCollection.findOneAndUpdate(
-      { id },
-      payload
+    const update = await this.userCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { name: payload.name, email: payload.email } }
     );
-    return value;
+    const user = await this.findById(id);
+    return user;
   }
   async findAll(): Promise<User[]> {
-    return this.userCollection.find().readBufferedDocuments();
+    return (await this.userCollection.find().toArray()).map((u) => {
+      u.id = u._id;
+      return u;
+    });
   }
-  findById(id: string): Promise<User | null> {
-    return this.userCollection.findOne({ id });
+  async findById(id: string): Promise<User | null> {
+    const result = await this.userCollection.findOne({ _id: new ObjectId(id) });
+    if (!result) return null;
+    result.id = (result as any)._id;
+    return result;
   }
 }

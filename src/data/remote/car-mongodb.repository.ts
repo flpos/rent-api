@@ -1,9 +1,10 @@
-import { Collection, Db } from 'mongodb';
+import { Collection, Db, ObjectId } from 'mongodb';
 import { Car } from '../../domain/entities/car.entity';
 import { CarRepository } from '../../domain/ports/car.repository';
+import { Document } from 'mongodb';
 
 export class CarMongodbRepository implements CarRepository {
-  carCollection: Collection<Car>;
+  carCollection: Collection<Car & Document>;
 
   constructor(db: Db) {
     this.carCollection = db.collection('cars');
@@ -20,15 +21,21 @@ export class CarMongodbRepository implements CarRepository {
   }
   async update(id: string, payload: Omit<Car, 'id'>): Promise<Car | null> {
     const { value } = await this.carCollection.findOneAndUpdate(
-      { id },
-      payload
+      { _id: new ObjectId(id) },
+      { $set: { ...payload } }
     );
     return value;
   }
   async findAll(): Promise<Car[]> {
-    return this.carCollection.find().toArray();
+    return this.carCollection
+      .find()
+      .toArray()
+      .then((cars) => cars.map((c) => ({ ...c, id: c._id })));
   }
-  findById(id: string): Promise<Car | null> {
-    return this.carCollection.findOne({ id });
+  async findById(id: string): Promise<Car | null> {
+    const car = await this.carCollection.findOne({ _id: new ObjectId(id) });
+    if (!car) return null;
+    car.id = car._id;
+    return car;
   }
 }

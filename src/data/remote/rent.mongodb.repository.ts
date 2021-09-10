@@ -1,23 +1,28 @@
-import { Collection, Db } from 'mongodb';
+import { Collection, Db, ObjectId, Document } from 'mongodb';
 import { Rent } from '../../domain/entities/rent.entity';
 import { RentRepository } from '../../domain/ports/rent.repository';
 
 export class RentMongodbRepository implements RentRepository {
-  rentCollection: Collection<Rent>;
+  rentCollection: Collection<Rent & Document>;
   constructor(db: Db) {
     this.rentCollection = db.collection('rents');
   }
-  findByCarAndInterval(
+  async findByCarAndInterval(
     start: Date,
     end: Date,
     carId: string
   ): Promise<Rent | null> {
-    return this.rentCollection.findOne({
+    const rent = await this.rentCollection.findOne({
       $and: [
-        { 'car.id': carId },
+        { 'car.id': new ObjectId(carId) },
         { $or: [{ end: { $gt: start } }, { start: { $lt: end } }] },
       ],
     });
+    if (!rent) {
+      return null;
+    }
+    rent.id = rent._id;
+    return rent;
   }
   findByUserAndInterval(
     start: Date,
@@ -26,7 +31,7 @@ export class RentMongodbRepository implements RentRepository {
   ): Promise<Rent | null> {
     return this.rentCollection.findOne({
       $and: [
-        { 'user.id': userId },
+        { 'user.id': new ObjectId(userId) },
         { $or: [{ end: { $gt: start } }, { start: { $lt: end } }] },
       ],
     });
@@ -41,7 +46,7 @@ export class RentMongodbRepository implements RentRepository {
   }
   async update(id: string, payload: Omit<Rent, 'id'>): Promise<Rent | null> {
     const { value } = await this.rentCollection.findOneAndUpdate(
-      { id },
+      { _id: new ObjectId(id) },
       payload
     );
     return value;
@@ -50,6 +55,6 @@ export class RentMongodbRepository implements RentRepository {
     return this.rentCollection.find().toArray();
   }
   findById(id: string): Promise<Rent | null> {
-    return this.rentCollection.findOne({ id });
+    return this.rentCollection.findOne({ _id: new ObjectId(id) });
   }
 }
